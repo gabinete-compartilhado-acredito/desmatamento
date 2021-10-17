@@ -1,0 +1,33 @@
+# Gerais
+
+analises/.ipynb_checkpoints
+analises/__pycache__
+analises/bkp
+docs
+imagens
+resultados/*
+!resultados/plots
+resultados/plots/*.png
+analises/nomes_ocultados_nas_analises.txt
+
+
+# Dados (muito voluma)
+
+dados/aux
+dados/brutos
+dados/limpos
+dados/processed
+dados/*.tar.gz
+
+# Analises não finalizadas
+
+## Votos
+analises/etl_dados_votos_2018.ipynb
+
+## Autuações
+analises/exploracao_dados_autuacoes.ipynb
+
+## Servidores
+analises/servidores_ibama.ipynb
+analises/query_servidores_ibama_ateh_2021-07.sql
+
