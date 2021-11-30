@@ -1,0 +1,15 @@
+processed/orcamentos-totalizados_incremento-desmatamento_por_ano-prodes.csv
+processed/numero_servidores_ibama_por_ano_prodes_PortalTransp-PEP.csv
+processed/chuvas/precip_amazonica_por_ano_prodes.csv
+brutos/reservas/Base Parques nacionais.csv
+aux/ipca_ateh_2021-09-01.csv
+brutos/economicos/boi_gordo_cepea_esalq_2010-2021-out.csv
+brutos/economicos/soja_bovespa_paranagua_cepea_esalq_2010-2021-out.csv
+brutos/economicos/milho_bovespa_esalq_2010-2021-out.csv
+brutos/economicos/pib_a_mercado_ibge_ateh_2_tri_2021.csv
+brutos/servidores/n_servidores_ibama_painel_estatistico_pessoal_min_planejamento.xlsx
+processed/servidores_sem_duplicados_novas_colunas_v01.csv
+aux/sigla_uf_nomes.csv
+aux/cod_municipios_ibge_tse.csv
+limpos/servidores_ibama/servidores_ibama_2013-01_2021_07.csv
+processed/unidades_exercicio_classificadas_manualmente.csv
