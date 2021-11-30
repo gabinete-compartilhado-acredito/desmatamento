@@ -28,6 +28,6 @@ analises/etl_dados_votos_2018.ipynb
 analises/exploracao_dados_autuacoes.ipynb
 
 ## Servidores
-analises/servidores_ibama.ipynb
-analises/query_servidores_ibama_ateh_2021-07.sql
+#analises/servidores_ibama.ipynb
+#analises/query_servidores_ibama_ateh_2021-07.sql
 
