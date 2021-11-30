@@ -85,3 +85,12 @@ def etl_prodes_data(prefix, first_year, last_year, extension='.txt'):
     df = add_prodes_extra_cols(df)
     
     return df
+
+
+def date_series_to_ano_prodes(series):
+    """
+    Translate a datetime Series `series`
+    into a Prodes year. The Prodes year 
+    Y goes from 01/08/Y-1 to 31/07/Y.
+    """
+    return series.dt.year + (series.dt.month >= 8).astype(int)
