@@ -11,6 +11,7 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as pl
+import re
 
 from xavy.dataframes import crop_strings
 
@@ -18,7 +19,7 @@ from xavy.dataframes import crop_strings
 ### From old utils module ###
 #############################
 
-def Bold(text):
+def bold(text):
     """
     Takes a string and returns it bold.
     """
@@ -32,9 +33,9 @@ def unique(series):
     """
     u = series.unique()
     try:
-        print(Bold(str(len(u)))+': '+'\033[1;34m | \033[0m'.join(sorted(u.astype(str))))
+        print(bold(str(len(u)))+': '+'\033[1;34m | \033[0m'.join(sorted(u.astype(str))))
     except:
-        print(Bold(str(len(u)))+': '+'\033[1;34m | \033[0m'.join(sorted(u)))
+        print(bold(str(len(u)))+': '+'\033[1;34m | \033[0m'.join(sorted(u)))
 
 
 def columns(df):
@@ -65,7 +66,7 @@ def mapUnique(df):
         else:
             isStr = all([isinstance(ui, str) for ui in u])
         print('')
-        print(Bold(c+': ')+str(n)+' unique values.')
+        print(bold(c+': ')+str(n)+' unique values.')
         
         if n == 'Unknown':
             n = 1
@@ -83,28 +84,53 @@ def mapUnique(df):
         else:
             if isStr:
                 try:
-                    print(Bold('(sample) ')+',  '.join(np.sort(np.random.choice(u,size=maxItems,replace=False))))
+                    print(bold('(sample) ')+',  '.join(np.sort(np.random.choice(u,size=maxItems,replace=False))))
                 except:
-                    print(Bold('(sample) ')+',  '.join(np.sort(np.random.choice(u.astype('unicode'),size=maxItems,replace=False))))
+                    print(bold('(sample) ')+',  '.join(np.sort(np.random.choice(u.astype('unicode'),size=maxItems,replace=False))))
             else:
                 try:
-                    print(Bold('(sample) ')+',  '.join(np.sort(np.random.choice(u,size=maxItems,replace=False)).astype('unicode')))
+                    print(bold('(sample) ')+',  '.join(np.sort(np.random.choice(u,size=maxItems,replace=False)).astype('unicode')))
                 except:
-                    print(Bold('(sample) ')+',  '.join(np.sort(np.random.choice(u.astype('unicode'),size=maxItems,replace=False))))
+                    print(bold('(sample) ')+',  '.join(np.sort(np.random.choice(u.astype('unicode'),size=maxItems,replace=False))))
 
 
-def checkMissing(df):
+def checkMissing(df, only_missing=True, return_df=False):
     """
     Takes a pandas dataframe and prints out the columns that have 
     missing values.
+
+    Parameters
+    ----------
+    df : DataFrame
+        The data to check for missing values.
+    only_missing : bool
+        Whether to return only the columns with missing values
+        or all the columns.
+    return_df : bool
+        Whether to return a DataFrame or to print the results.
+
+    Returns
+    -------
+    final : DataFrame or None
+        If `return_df` is True, return a DataFrame with missing 
+        statistics for each column. Otherwise, return nothing. 
     """
     colNames = df.columns.values
-    print(Bold('Colunas com valores faltantes:'))
     Ntotal = len(df)
     Nmiss  = np.array([float(len(df.loc[df[c].isnull()])) for c in colNames])
     df2    = pd.DataFrame(np.transpose([colNames,[df[c].isnull().any() for c in colNames], Nmiss, np.round(Nmiss/Ntotal*100,2)]),
                      columns=['coluna','missing','N','%'])
-    print(df2.loc[df2['missing']==True][['coluna','N','%']])
+
+    if only_missing == True:
+        final = df2.loc[df2['missing']==True][['coluna','N','%']]
+    else:
+        final = df2[['coluna','N','%']]
+
+    if return_df == True:
+        return final
+    else:
+        print(bold('Colunas com valores faltantes:'))
+        print(final)
 
 
 def one2oneQ(df, col1, col2):
@@ -126,6 +152,361 @@ def one2oneViolations(df, colIndex, colMultiples):
     (only for when the number of unique values is >1).
     """
     return df.groupby(colIndex)[colMultiples].unique().loc[df.groupby(colIndex)[colMultiples].nunique()>1]
+
+
+#################################
+### New exploratory functions ###
+#################################
+
+
+def map_subcategories(df):
+    """
+    Print out the names of columns whose 
+    values are sub-categories of other 
+    columns (i.e. for each value considered
+    a sub-category, there is only one value 
+    associated to it in another column).    
+    """
+    cols   = df.columns
+    n_cols = len(cols)
+    print(bold('{:25} --> {}').format('Macro-categoria', 'Sub-categoria'))
+    for col1 in cols:
+        for col2 in cols:
+            if col1 != col2:
+                n_mixed_cats = len(one2oneViolations(df, col1, col2))
+                if n_mixed_cats == 0:
+                    print('{:25} --> {}'.format(col2, col1))
+
+
+def drop_redundant_cols(df, prefix_drop='CD_', verbose=True):
+    """
+    Return a new DataFrame with columns that are biunivocal to 
+    some other column dropped.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to be checked.
+    prefix_drop : str or list of str
+        When a pair of biunivocal columns
+        is found, assign the preference 
+        to be dropped to columns containing
+        one of the provided prefixes.
+    
+    Returns
+    -------
+    dropped_df : DataFrame
+        The same data as `df` but with the 
+        selected biunivocal columns dropped.
+    """
+
+    drop_set = find_redundant_cols(df, prefix_drop, verbose)
+    dropped_df = df.drop(drop_set, axis=1)
+    return dropped_df
+
+
+def find_redundant_cols(df, prefix_drop='CD_', verbose=True):
+    """
+    Find columns that are biunivocal to 
+    some other column in a DataFrame.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to be checked.
+    prefix_drop : str or list of str
+        When a pair of biunivocal columns
+        is found, assign the preference 
+        to be dropped to columns containing
+        one of the provided prefixes.
+    
+    Returns
+    -------
+    drop_set : set
+        Set of column names that can be dropped 
+        since they are biunivocal to some other
+        column.
+    """
+
+    # Standardize input:
+    if type(prefix_drop) == str:
+        prefix_drop = [prefix_drop]
+    # Turn prefixes into regex:
+    prefix_drop = '|'.join(prefix_drop)
+    
+    # Pega parâmetros:
+    cols = df.columns
+    n_cols = len(cols)
+
+    # Prepara conjuntos:
+    drop_set = set()
+    keep_set = set()
+    # Loop sobre pares de colunas:
+    for i in range(n_cols):
+        for j in range(i + 1, n_cols):
+            col1 = cols[i]
+            col2 = cols[j]
+
+            # Verifica se existe correspondência:
+            is_same = one2oneQ(df, col1, col2)
+            if is_same:
+                if verbose:
+                    print('{} é outro nome para {}'.format(col1, col2), end=' >> ')
+                # Se uma coluna tem o prefixo especificado, remove ela:
+                regex_match = re.match(prefix_drop, col1)
+                if regex_match is not None:
+                    if verbose:
+                        print('Encontrado prefixo {}: remover a coluna {}'.format(regex_match.group(), col1))
+                        drop_set.add(col1)
+                        #keep_set.add(col2)
+                # Caso contrário, remove a outra:
+                else:
+                    if verbose:
+                        print('Remover a coluna {}'.format(col2))                
+                    drop_set.add(col2)
+                    #keep_set.add(col1)
+    
+    return drop_set
+
+
+def non_unique_cols(df, print_uniques=True, transpose=False):
+    """
+    Get the columns that are not single-valued.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to analyse the amount of unique
+        values per column.
+    print_uniques : bool
+        Whether to display the single-valued 
+        columns and their respective values.
+    transpose : bool
+        When displaying the information above as 
+        a DataFrame, transpose it.
+
+    Returns
+    -------
+    non_unique_cols : list
+        List of names of columns that are not
+        single-valued.
+    """
+    # Security checks:
+    assert type(print_uniques) == bool
+    assert type(transpose) == bool
+    
+    # Get number of unique values per column:
+    nunique = df.nunique(dropna=False)
+    
+    # If requested, display the values of the unique columns:
+    if print_uniques:
+        print(bold('Colunas com um único valor:'))
+        unique_cols = list(nunique.loc[nunique == 1].index)
+        if transpose:
+            display(df[unique_cols].drop_duplicates().transpose())
+        else:
+            display(df[unique_cols].drop_duplicates())
+
+    # Return a list of columns whose values vary:
+    non_unique_cols = list(nunique.loc[nunique > 1].index)
+    return non_unique_cols
+
+
+def counts_table(series, show=False, head=10):
+    """
+    Build a value counts DataFrame with counts and frequency,
+    including missing values.
+    
+    Parameters
+    ----------
+    series : Series
+        The data to count.
+    show : bool
+        Whether to display the counts table and return nothing 
+        or to return the table and do not display it.
+    head : int
+        The amount of lines to display if `show` is True. If 
+        `show` is False, this is ignored.
+    
+    Returns
+    -------
+    df : DataFrame or None
+        If `show` is True, return None. Otherwise, return 
+        the full counts table.
+    """
+    
+    # Value counts:
+    freq = series.value_counts(normalize=True, dropna=False) * 100
+    counts = series.value_counts(normalize=False, dropna=False)
+    counts_df = pd.DataFrame({'Quantidade': counts, 'Frequência (%)': freq})
+    
+    # Return or display:
+    if show == True:
+        display(counts_df.head(head))
+    else:
+        return counts_df
+
+    
+def map_counts(df, head=10):
+    """
+    Display one table per column containing the 
+    `df` unique value counts and frequencies. 
+    Only show the first `head` (int) most frequent 
+    values, including missing values.
+    
+    """
+    cols = df.columns
+    for col in cols:
+        print(bold('\n' + col))
+        counts_table(df[col], show=True, head=head)    
+
+
+def guess_data_type(series, max_mag=2, max_int=30, verbose=False):
+    """
+    Try to classify the series into categorical ('cat'), 
+    linear numerical ('num') or log numerical ('log') 
+    data types.
+    
+    Parameters
+    ----------
+    series : Series
+        The data whose type should be classified.
+    max_mag : float
+        For numerical data types, the maximum 10-folds
+        for positive data to be classified as 'num'
+        (linear scale). Above that, the Series is 
+        classified as 'log'.
+    max_int : int
+        Maximum number of unique integers allowed
+        so the data is classified as categorical. 
+        Above this value, integers are considered 
+        numerical ('num' or 'log').
+        
+    Returns
+    -------
+    
+    dtype : str
+        Data type, one of 'cat', 'num' or 'log'.
+    """
+    
+    test_series = series.astype(str)
+
+    
+    # Numerical: is date.
+    if pd.api.types.is_datetime64_ns_dtype(series):
+        if verbose:
+            print("Identified dates: set as 'num'.")
+        return 'num'
+    
+    # Categorical: contains a character that is not used by numbers.
+    if test_series.str.contains('[^\d,.\-]').any():
+        if verbose:
+            print('Non-numerical characters found.')
+        return 'cat'
+    
+    # Categorical: minus sign does not appear at the start:
+    if (test_series.str.contains('-') & ~test_series.str.contains('^-[\d.,]+')).any():
+        if verbose:
+            print('Minus sign not at the start.')
+        return 'cat'
+    
+    # From now on, series is likely a number.
+    
+    # Is float:
+    non_null_floats = series.astype(float).loc[~series.isnull()]
+    if not np.isclose(non_null_floats.astype(int).astype(float), non_null_floats).all():
+        if verbose:
+            print('Idenfified floats.')
+        # log-scale number: it is positive and covers many magnitudes:
+        if (non_null_floats > 0).all() and (np.log10(non_null_floats).max() - np.log10(non_null_floats).min() > max_mag):
+            if verbose:
+                print('It is positive and covers many magnitudes.')
+            return 'log'
+        # lin-scale number: negative OR few magnitudes:
+        else:
+            if verbose:
+                print('It is negative or covers few magnitudes.')
+            return 'num'
+    
+    # Is integer:
+    else:
+
+        # Categorical: some integer starts with 0.
+        if test_series.str.contains('^0').any():
+            if verbose:
+                print('Some integers start with zero.')
+            return 'cat'
+        
+        if verbose:
+            print('Idenfified integer.')        
+        # Numerical (at least for plotting purposes): a lot of different categories
+        if series.nunique() > max_int:
+            if verbose:
+                print('A lot of different integers.')
+
+            # log-scale number: it is positive and covers many magnitudes:
+            if (non_null_floats > 0).all() and (np.log10(non_null_floats).max() - np.log10(non_null_floats).min() > max_mag):
+                if verbose:
+                    print('It is positive and covers many magnitudes.')
+                return 'log'
+            # lin-scale number: negative OR few magnitudes:
+            else:
+                if verbose:
+                    print('It is negative or covers few magnitudes.')
+                return 'num'
+        
+        # Assume categorical:
+        else:
+            if verbose:
+                print('Few different integers.')
+            return 'cat'
+
+
+def guess_all_data_types(df, max_mag=2, max_int=30, return_dict=False, verbose=False):
+    """
+    Try to classify the each column in `df` (DataFrame) 
+    into categorical ('cat'), linear numerical ('num') or log 
+    numerical ('log') data types.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        The data whose types should be classified.
+    max_mag : float
+        For numerical data types, the maximum 10-folds
+        for positive data to be classified as 'num'
+        (linear scale). Above that, the column is 
+        classified as 'log'.
+    max_int : int
+        Maximum number of unique integers allowed
+        so the data is classified as categorical. 
+        Above this value, integers are considered 
+        numerical ('num' or 'log').
+    return_dict : bool
+        Whether to return a dict from column name
+        to data type ot to return a list of data 
+        types.
+
+    Returns
+    -------
+    
+    dtypes : list of str or dict
+        Data types, each one of 'cat', 'num' or 'log'.
+    """
+
+    # Security checks:
+    assert type(return_dict) == bool
+
+    # Guess data types:
+    dtype_list = [guess_data_type(df[col], max_mag, max_int, verbose) for col in df.columns]
+
+    # Return list of data types if requested:
+    if not return_dict:
+        return dtype_list
+
+    # Return dict of data types if requested:
+    dtype_dict = dict(zip(df.columns, dtype_list))
+    return dtype_dict
 
 
 ##########################
@@ -187,7 +568,7 @@ def plot_categorical_dist(series, max_cat=30, cat_slice=(0, 30), normalize=False
         counts.plot(kind='bar', **kwargs)
         
 
-def multiple_dist_plots(df, dtypes, n_cols=5, new_fig=True, fig_width=25, subplot_height=5, normalize=False, max_cat=30, cat_slice=(0, 30), n_bins='auto', **kwargs):
+def multiple_dist_plots(df, dtypes=None, n_cols=5, new_fig=True, fig_width=25, subplot_height=5, normalize=False, max_cat=30, cat_slice=(0, 30), n_bins='auto', **kwargs):
     """
     Create one plot of the distribution of values for each column 
     in a DataFrame.
@@ -196,12 +577,12 @@ def multiple_dist_plots(df, dtypes, n_cols=5, new_fig=True, fig_width=25, subplo
     ----------
     df : DataFrame
         Data for which to plot the distribution.
-    dtypes : list of str or of None
+    dtypes : None or list of Union[str, None]
         Types of the data for each column in `df`. It can be
         'cat' (for categorical distribution), 'num' (for numerical
         distribution, a.k.a a histogram), 'log'(same as 'num' but 
         for the base-10 log of the values) or None (no plot for this 
-        column).
+        column). If `dtypes` itself is None, guess the data types.
     n_cols : int
         Number of columns in the grid of subplots.
     fig_width : float
@@ -226,6 +607,10 @@ def multiple_dist_plots(df, dtypes, n_cols=5, new_fig=True, fig_width=25, subplo
     kwargs : other
         Parameters passed to the plots.
     """
+
+    if type(dtypes) == type(None):
+        dtypes = guess_all_data_types(df)
+        
     # Security checks:
     assert len(dtypes) == len(df.columns), '`dtypes` must contain one entry per `df` column.'
     assert set(dtypes) - {'cat', 'num', 'log', None} == set(), "`dtypes` can only contain the elements: 'cat', 'num', 'log' and None."
@@ -260,6 +645,7 @@ def multiple_dist_plots(df, dtypes, n_cols=5, new_fig=True, fig_width=25, subplo
                     bins = n_bins
                 if dtype == 'log':
                     np.log10(series).hist(bins=bins, density=normalize, **kwargs)
+                    pl.xlabel('log')
                 else:
                     series.hist(bins=bins, density=normalize, **kwargs)
             

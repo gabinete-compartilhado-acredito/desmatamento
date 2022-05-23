@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
 
+#import xavy.explore as xe
 
-def Bold(text):
+
+def bold(text):
     """
     Takes a string and returns it bold.
     """
@@ -15,7 +17,7 @@ def print_string_series(series, max_rows=100):
     """
     n = 1
     for i, v in zip(series.index, series.values):
-        print('{}: {}'.format(Bold(str(i)), v))
+        print('{}: {}'.format(bold(str(i)), v))
         n = n + 1
         if n > max_rows:
             break
@@ -51,7 +53,7 @@ def print_array_series(series):
     n = len(series)
         
     for i in range(n):
-        print(Bold(str(series.index[i]) + ': ') + ' / '.join(series.iloc[i]))
+        print(bold(str(series.index[i]) + ': ') + ' / '.join(series.iloc[i]))
 
 
 def crop_strings(series, str_range, ellipsis='…'):
@@ -88,3 +90,324 @@ def crop_strings(series, str_range, ellipsis='…'):
         return pd.Series(y, index=series.index)
     else:
         return y
+
+
+def date_series_replace(series, year=None, month=None, day=None):
+    """
+    Replace date elements with the ones specified.
+    
+    Parameters
+    ----------
+    series : datetime Series
+        The series with dates to be altered.
+    year : int
+        The fixed year used to replace the year in `series`.
+    month : int
+        The fixed month used to replace the year in `series`.
+    day : int
+        The fixed day used to replace the year in `series`.
+    
+    Returns
+    -------
+    date_series : datetime Series
+        A new series like `series` but with the replacements
+        made.
+    """
+    return pd.to_datetime(
+        {'year':  series.dt.year if year is None else year,
+         'month': series.dt.month if month is None else month,
+         'day':   series.dt.day if day is None else day})
+
+
+def unique_traits(df, agg_by, id_cols, agg_is_index=False):
+    """
+    Assert that columns `id_cols` (str or 
+    list of str) only have one possible value 
+    when `df` is grouped by columns `agg_by` 
+    (str or list of str) and return these 
+    unique values as a DataFrame. If 
+    `agg_is_index` (bool) is True, its index 
+    are `agg_by`, otherwise `agg_by` are 
+    columns.
+    """
+
+    # Security check:
+    assert type(agg_is_index)
+    
+    # Standardizing input:
+    if type(agg_by) == str or type(agg_by) == int:
+        agg_by = [agg_by]
+    if type(id_cols) == str or type(id_cols) == int:
+        id_cols = [id_cols]
+    
+    # Checking there is only one value in each column:
+    grouped = df.groupby(agg_by)[agg_by + id_cols]
+    assert (grouped.nunique() == 1).all().all(), 'Encontrado mais de um identificador para o agrupamento.'
+    # Extract these values:
+    id_df = grouped.head(1)
+    # Set index:
+    if agg_is_index:
+        id_df = id_df.set_index(agg_by)
+    
+    return id_df
+
+
+def add_column_suffix(df, suffix, inplace=False):
+    """
+    Rename a DataFrame's columns by adding a suffix
+    to them.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame to change its columns' names.
+    suffix : str
+        The suffix to be appended to `df`'s column
+        names.
+    inplace : bool
+        Whether to change the columns' names in place
+        and return None or to keep `df` as it is and
+        return the transformed DataFrame
+        
+    Returns
+    -------
+    
+    new_df : DataFrame or None
+        If `inplace` is False, return the DataFrame
+        with the new column names. Otherwise, return
+        None.
+    """
+    # Build translator:
+    cols = df.columns
+    new_cols = [str(col) + suffix for col in cols]
+    translator = dict(zip(cols, new_cols))
+    
+    # Rename columns:
+    if inplace == True:
+        df.rename(translator, axis=1, inplace=True)
+    else:
+        return df.rename(translator, axis=1)
+    
+    return None
+
+
+def build_onehot_df(cat_df, sort_by_cardinality=True, categories='auto', drop=None):
+    """
+    Given a DataFrame containing only categorical 
+    columns, return a DataFrame of its one-hot 
+    encodings.
+    
+    Parameters
+    ----------
+    cat_df : DataFrame
+        DataFrame with categorical columns only.
+    sort_by_cardinality : bool
+        Wether to sort the columns of `cat_df` 
+        by the number of different categories 
+        they contain.
+    categories : 'auto' or a list of array-like
+        Categories in each column (see OneHotEncoder 
+        docs).
+    drop : {'first', 'if_binary'}, None, or a array-like 
+        of shape (n_features,).
+
+    Returns
+    -------
+    onehot_df : DataFrame
+        DataFrame with one-hot encoding of 
+        `cat_df`.
+    """
+    from sklearn.preprocessing import OneHotEncoder
+    
+    # Security check:
+    assert type(sort_by_cardinality) == bool
+    
+    # Sort columns by number of distinct values:
+    if sort_by_cardinality:
+        sorted_cols = cat_df.nunique().sort_values().index
+    # Or not:
+    else:
+        sorted_cols = cat_df.columns
+    
+    # One-hot encode features:
+    cat_encoder = OneHotEncoder(sparse=False, categories=categories, drop=drop)
+    encoded_data = cat_encoder.fit_transform(cat_df[sorted_cols])
+    feature_names = cat_encoder.get_feature_names(sorted_cols)
+
+    # Build DataFrame:
+    onehot_df = pd.DataFrame(data=encoded_data, columns=feature_names, index=cat_df.index)
+    onehot_df = onehot_df.astype(int)
+    
+    return onehot_df
+
+
+def find_low_ncat_cols(df, max_ncats=None):
+    """
+    Return a Series with the number of 
+    unique values per column.
+    """
+    n_cats = df.nunique().sort_values()
+    
+    if max_ncats is None:
+        return n_cats
+    else:
+        low_ncat_cols = n_cats.loc[n_cats <= max_ncats]
+        return low_ncat_cols
+
+
+def prepare_series_for_cross_join(series, index=0):
+    """
+    Returns a Pandas Series containing the unique 
+    values in `series` (Series), all associated 
+    to the same `index` (int or str).
+    """
+    
+    # Security checks:
+    assert type(index) in (str, int), '`index` must be of type str or int.'
+    
+    # Get unique values:
+    unique_values = series.drop_duplicates().values
+    # Build Series:
+    cj_series = pd.Series(unique_values, index=[index]*len(unique_values), name=series.name)
+    
+    return cj_series
+
+    
+def cross_join_columns(df, ascending=None):
+    """
+    Create a DataFrame with all unique combinations 
+    of values from all input columns.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        Data containing the columns to be combined 
+        so all possible combinations of their values
+        are given in the output. Repeated values 
+        are ignored.
+    ascending : bool or None or list of (bool, None).
+        If None, do not sort the columns (use the 
+        order given by the first appearance of 
+        each value). If True, sort the values in 
+        the columns in ascending order. If False, 
+        sort in reverse order.
+        If list, use one of the criteria above for 
+        each column in `df`.
+    
+    Returns
+    -------
+    cross_joined_df : DataFrame
+        DataFrame with all distinct combinations of 
+        values in `df` columns, with standard 
+        indexing (0, 1, 2, ...).
+    """
+    
+    # Standardize input:
+    if type(ascending) in (type(None), bool):
+        ascending = [ascending] * len(df.columns)
+    else:
+        assert len(ascending) == len(df.columns), '`ascending` must be the same length as the number of columns in `df`.'
+
+    # Security check:
+    for a in ascending:
+        assert a in (None, True, False), '`ascending` can only contain True, False or None.'
+
+    # Loop over columns, cross-joining on the way:
+    cross_joined_df = pd.DataFrame(index=[0])    
+    for c in range(len(df.columns)):
+
+        # Create unique Series:
+        cj_series = prepare_series_for_cross_join(df.iloc[:, c])
+
+        # Sort, if requested:
+        if ascending[c] is not None:
+            cj_series = cj_series.sort_values(ascending=ascending[c])
+
+        # Cross join:
+        cross_joined_df = cross_joined_df.join(cj_series)
+
+    # Reset index:
+    cross_joined_df.reset_index(inplace=True, drop=True)
+    
+    return cross_joined_df
+
+
+def generate_label_df(df, agg_cols, count_cols):
+    """
+    Create a DataFrame in which, for each combination of values present 
+    in `df` columns `agg_cols`, create one row for each of the possible 
+    combination of all values in columns `count_cols`. That is: the 
+    combination of values in `agg_cols` are only those seen in `df`, while 
+    any possible combination of them and values in `count_cols` gain one 
+    row.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame with columns `agg_cols` and `count_cols` 
+        from which the possible values and combinations will be 
+        built.
+        
+    agg_cols : list of str
+        Names of the columns to be used to group the data.
+        Only the observed combination of their values will 
+        be kept in the output.
+        
+    count_cols : list of str
+        Names of the columns for which all the combinations 
+        of all available values will be shown in the output, 
+        even if such combination is never seen in `df`. This 
+        is repeated for each combination of the `agg_cols` 
+        values.
+        
+    Returns
+    -------
+    label_df : DataFrame
+        A dataframe with columns `agg_cols` and `count_cols`, 
+        where the values of the first are combined to reproduced 
+        the observed combinations in `df`, and the values of 
+        the latter are combined (appear in the same row) in every 
+        possible combination between them and with the `agg_cols`.
+    """
+
+    # Create DataFrame with columns representing the groups:
+    label_df = df.groupby(agg_cols).size().reset_index()[agg_cols]
+    label_df.index = pd.Index([0] * len(label_df))
+
+    # Loop over categories to count:
+    for col in count_cols:
+
+        # Build series of unique values:
+        col_values = df[col].unique()
+        count_series = pd.Series(col_values, index=[0] * len(col_values))
+        count_series.name = col
+
+        # Join to table of labels:
+        label_df = label_df.join(count_series)
+
+    # Reset index:
+    label_df = label_df.reset_index(drop=True)
+    
+    return label_df
+
+
+def iskeyQ(df):
+    """
+    Return True if columns in `df` (DataFrame or Series)
+    uniquely identifies a row, and False otherwise.
+    """
+    Q = len(df) == len(df.drop_duplicates())
+    return Q
+
+
+def str_join(df, delimiter=', '):
+    """
+    Join all columns in `df` (DataFrame) separating 
+    them with a `delimiter` (str).
+    """
+    
+    series = df[df.columns[0]].copy()
+    for col in df.columns[1:]:
+        series = series + delimiter + df[col]
+    
+    return series
