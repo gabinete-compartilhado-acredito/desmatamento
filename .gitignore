@@ -10,8 +10,7 @@ resultados/*
 resultados/plots/*.png
 analises/nomes_ocultados_nas_analises.txt
 
-
-# Dados (muito voluma)
+# Dados (muito volume)
 
 dados/aux
 dados/brutos
@@ -31,3 +30,5 @@ analises/exploracao_dados_autuacoes.ipynb
 #analises/servidores_ibama.ipynb
 #analises/query_servidores_ibama_ateh_2021-07.sql
 
+# Análises pontuais específicas, não relevantes para o projeto
+analises/variacao_orcamento_MMA_2020-2022.ods
