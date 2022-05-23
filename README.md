@@ -1,4 +1,4 @@
-# Análise das causas do aumento do desmatamento na Amazônia em 2019
+# O desmatamento na Amazônia e a resposta federal
 
 Este trabalho busca compreender as causas para o aumento do desmatamento na Amazônia
 e a efetividade da resposta do Governo Federal via Operações de Garantia da Lei e da
