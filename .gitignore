@@ -16,6 +16,7 @@ dados/aux
 dados/brutos
 dados/limpos
 dados/processed
+dados/mapas
 dados/*.tar.gz
 
 # Analises não finalizadas

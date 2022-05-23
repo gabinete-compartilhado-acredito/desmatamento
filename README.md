@@ -1,10 +1,14 @@
 # Análise das causas do aumento do desmatamento na Amazônia em 2019
 
-Este trabalho visa analisar a relação dos incrementos de desmatamento na Amazônia, medidos pelo projeto Prodes do INPE,
-com outras variáveis, com o objetivo de identificar as causas para o aumento do desmatamento. Num primeiro momento, analisamos
-apenas a relação do desmatamento com o orçamento do Ministério do Meio Ambiente (MMA). Em seguida, incluímos outras variáveis
-na análise: quantidade de chuvas na região amazônica, preço de commodities agropecuárias e número de servidores do IBAMA. Embora
-não tenha sido incluído na nota técnica final, também analisamos a relação com o PIB brasileiro deflacionado.
+Este trabalho busca compreender as causas para o aumento do desmatamento na Amazônia
+e a efetividade da resposta do Governo Federal via Operações de Garantia da Lei e da
+Ordem (GLOs). Para tanto utilizamos dados dos projetos Prodes e Deter do [INPE](https://www.gov.br/inpe/pt-br).
+
+Num primeiro momento, analisamos apenas a relação do desmatamento com o orçamento do Ministério do Meio Ambiente (MMA).
+Em seguida, incluímos outras variáveis na análise: quantidade de chuvas na região amazônica, preço de commodities agropecuárias
+e número de servidores do IBAMA. Embora não tenha sido incluído na nota técnica final, também analisamos a relação com o
+PIB brasileiro deflacionado. Por fim, utilizamos grupos de municípios teste e controle para verificar a eficácia das GLOs
+no combate ao desmatamento.
 
 ## Estrutura do projeto:
 
@@ -13,7 +17,8 @@ não tenha sido incluído na nota técnica final, também analisamos a relação
     ├── requirements.txt                              <- Principais pacotes de python necessários
     ├── dados                                         <- Diretório onde salvar os dados
     |   ├── arquivos-de-dados_orcamento.txt           <- Lista de arquivos do tarfile 1
-    |   └── arquivos-de-dados_modelo-multivariado.txt <- Lista de arquivos do tarfile 2   
+    |   ├── arquivos-de-dados_modelo-multivariado.txt <- Lista de arquivos do tarfile 2
+    |   └── arquivos-de-dados_efeitos-das-GLOs.txt    <- Lista de arquivos do tarfile 3
     ├── analises                                      <- Análises feitas (notebooks de python)
     |   └── xavy                                      <- Pasta com códigos auxiliares
     └── resultados                                    <- Onde os gráficos serão salvos
@@ -23,9 +28,11 @@ não tenha sido incluído na nota técnica final, também analisamos a relação
 
 As notas técnicas resultantes das análises deste repositório encontram-se disponíveis nos links:
 
-* [Amazônia: alocação orçamentária errática, ineficiência das políticas públicas e descontrole do desmatamento](http://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_Desmatamento_e_Orcamento.pdf); e
+* [Amazônia: alocação orçamentária errática, ineficiência das políticas públicas e descontrole do desmatamento](http://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_Desmatamento_e_Orcamento.pdf);
 
-* [O que explica o aumento do o desmatamento na Amazônia?](http://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_O_que_explica_o_desmatamento.pdf)
+* [O que explica o aumento do o desmatamento na Amazônia?](http://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_O_que_explica_o_desmatamento.pdf); e
+
+* [O impacto das GLOs ambientais no desmatamento da Amazônia](http://) (ainda não disponível).
 
 ## Pacotes necessários
 
@@ -41,16 +48,18 @@ Com exceção de alguns arquivos criados por nós (e.g. que agrupam ações orç
 os dados são públicos e estão disponíveis na internet. Para facilitar, disponibilizamos os dados já na estrutura e formato utilizados pelas análises.
 
 Porém, como os dados são volumosos, eles não estão neste repositório, mas se encontram nos arquivos comprimidos (`.tar.gz`)
-[tarfile 1 (análise do orçamento)](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-desmatamento-orcamento.tar.gz)
-e [tarfile 2 (análise multivariada)](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-modelo-multivariado.tar.gz).
+[tarfile 1 (análise do orçamento)](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-desmatamento-orcamento.tar.gz),
+[tarfile 2 (análise multivariada)](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-modelo-multivariado.tar.gz) e
+[tarfile 3 (análise da efetividade das GLOs)](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-efeito-GLOs.tar.gz).
 Em princípio, basta baixá-los e descomprimi-los dentro do diretório `dados` para que as análises possam localizar
 os arquivos necessários. A estrutura de sub-diretórios utilizada pelo projeto está guardada dentro do tarfile e deve ser reproduzida após a descompressão.
 
 A análise sobre a relação entre desmatamento e orçamento apenas depende dos dados no
 [tarfile 1](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-desmatamento-orcamento.tar.gz). Já a análise da combinação de
 várias variáveis _também_ depende dos dados no [tarfile 2](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-modelo-multivariado.tar.gz).
-Os arquivos `dados/arquivos-de-dados_orcamento.txt` e `dados/arquivos-de-dados_modelo-multivariado.txt` contém a lista de arquivos de cada tarfile,
-na estrutura de diretórios planejada.
+Por último, a análise da efetividade das GLOs apenas depende do [tarfile 3](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-efeito-GLOs.tar.gz). 
+Os arquivos `dados/arquivos-de-dados_orcamento.txt`, `dados/arquivos-de-dados_modelo-multivariado.txt` e `dados/arquivos-de-dados_efeitos-das-GLOs.txt`
+contém a lista de arquivos de cada tarfile, na estrutura de diretórios planejada.
 
 
 ### Dados de chuvas (precipitação)
@@ -114,6 +123,17 @@ criar e testar modelos preditivos para o incremento de desmatamento. Além disso
 notebook principal da análise multivariada do desmatamento. Os dados de input necessários estão nos arquivos
 [tarfile 1](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-desmatamento-orcamento.tar.gz)
 e [tarfile 2](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-modelo-multivariado.tar.gz).
+
+### `efeito_GLOs_via_deter_teste_controle.ipynb`
+
+Este notebook faz a análise de efetividade das Operações de Garantia da Lei e da Ordem ambientais no combate ao desmatamento da Amazônia.
+Para tanto, ele utiliza a lista de municípios alvo das GLOs - obtida como resposta ao Requerimento de Informação
+(RIC) [1147/2021](https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2298361) - para separar os territórios em teste
+e controle, os dados de alerta de desmatamento do Deter para estimar o desmatamento em cada município e mês
+e aplica o método das Diferenças em Diferenças para verificar se as GLOs tiveram algum efeito de redução do desmatamento
+esperado. A significância do resultado é verificado com um método de reamostragem entre os municípios controle.
+Os dados de input necessários estão no arquivo
+[tarfile 3](https://storage.googleapis.com/gab-compartilhado-publico/desmatamento/dados-efeito-GLOs.tar.gz).
 
 ## Contato
 
