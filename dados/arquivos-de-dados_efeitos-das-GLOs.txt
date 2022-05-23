@@ -1,0 +1,9 @@
+brutos/outros/municipios_com_glos.csv
+processed/prodes_codIbge_municipios_area-florestal.csv
+brutos/desmatamento/terrabrasilis_deter/deter_desmatamento_diario_2016-01-01_2022-05-06.csv
+brutos/desmatamento/terrabrasilis_deter/deter_desmatamento_mensal_2022-02.csv
+mapas/municipalities_legal_amazon/municipalities_legal_amazon.dbf
+mapas/municipalities_legal_amazon/municipalities_legal_amazon.prj
+mapas/municipalities_legal_amazon/municipalities_legal_amazon.qpj
+mapas/municipalities_legal_amazon/municipalities_legal_amazon.shp
+mapas/municipalities_legal_amazon/municipalities_legal_amazon.shx
