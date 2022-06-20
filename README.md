@@ -32,7 +32,7 @@ As notas técnicas resultantes das análises deste repositório encontram-se dis
 
 * [O que explica o aumento do o desmatamento na Amazônia?](http://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_O_que_explica_o_desmatamento.pdf); e
 
-* [O impacto das GLOs ambientais no desmatamento da Amazônia](http://) (ainda não disponível).
+* [O impacto das GLOs ambientais no desmatamento da Amazônia](http://movimentoacredito.org/dados/notas_tecnicas/NT_Efeito_das_GLOs_no_desmatamento.pdf).
 
 ## Pacotes necessários
 
