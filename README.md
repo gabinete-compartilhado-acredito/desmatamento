@@ -24,15 +24,24 @@ no combate ao desmatamento.
     └── resultados                                    <- Onde os gráficos serão salvos
     
 
-## Notas técnicas finais
+## Publicações finais
 
 As notas técnicas resultantes das análises deste repositório encontram-se disponíveis nos links:
 
 * [Amazônia: alocação orçamentária errática, ineficiência das políticas públicas e descontrole do desmatamento](https://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_Desmatamento_e_Orcamento.pdf);
-
 * [O que explica o aumento do o desmatamento na Amazônia?](https://dados.movimentoacredito.org/notas_tecnicas/Nota_Tecnica_O_que_explica_o_desmatamento.pdf); e
-
 * [O impacto das GLOs ambientais no desmatamento da Amazônia](https://movimentoacredito.org/dados/notas_tecnicas/NT_Efeito_das_GLOs_no_desmatamento.pdf).
+
+Esta pesquisa foi em grande parte condensada no artigo "O desmonte da Amazônia", premiado pelo
+[I Prêmio Orçamento Público, garantia de direitos e combate às desigualdades](https://www.premioorcamentoedireitos.com/)
+da Fundação Tide Setubal e da Associação Nacional dos Servidores da Carreira de Planejamento e Orçamento, e publicado em uma
+[coletânea de artigos](https://fundacaotidesetubal.org.br/publicacoes/i-premio-orcamento-publico-garantia-de-direitos-e-combate-as-desigualdades-artigos-vencedores).
+Ele também resultou nas seguintes matérias jornalísticas:
+
+* [Gasto militar na Amazônia cresce 178%, mas desmatamento se mantém em alta](https://sustentabilidade.estadao.com.br/noticias/geral,gasto-militar-na-amazonia-cresce-178-mas-desmatamento-se-mantem-em-alta,70003855066) - O Estado de S. Paulo;
+* [Programa milionário da Defesa não reduziu desmatamento na Amazônia](https://www.metropoles.com/colunas/guilherme-amado/programa-milionario-da-defesa-nao-reduziu-desmatamento-na-amazonia) - Metrópoles; e
+* [O desmonte da Amazônia: o impacto de escolhas políticas no desmatamento](https://pp.nexojornal.com.br/ponto-de-vista/2022/O-desmonte-da-Amaz%C3%B4nia-o-impacto-de-escolhas-pol%C3%ADticas-no-desmatamento) - Nexo Jornal. 
+
 
 ## Pacotes necessários
 
