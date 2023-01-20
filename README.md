@@ -36,7 +36,7 @@ Esta pesquisa foi em grande parte condensada no artigo "O desmonte da Amazônia"
 [I Prêmio Orçamento Público, garantia de direitos e combate às desigualdades](https://www.premioorcamentoedireitos.com/)
 da Fundação Tide Setubal e da Associação Nacional dos Servidores da Carreira de Planejamento e Orçamento, e publicado em uma
 [coletânea de artigos](https://fundacaotidesetubal.org.br/publicacoes/i-premio-orcamento-publico-garantia-de-direitos-e-combate-as-desigualdades-artigos-vencedores).
-Ele também resultou nas seguintes matérias jornalísticas:
+Ela também resultou nas seguintes matérias jornalísticas:
 
 * [Gasto militar na Amazônia cresce 178%, mas desmatamento se mantém em alta](https://sustentabilidade.estadao.com.br/noticias/geral,gasto-militar-na-amazonia-cresce-178-mas-desmatamento-se-mantem-em-alta,70003855066) - O Estado de S. Paulo;
 * [Programa milionário da Defesa não reduziu desmatamento na Amazônia](https://www.metropoles.com/colunas/guilherme-amado/programa-milionario-da-defesa-nao-reduziu-desmatamento-na-amazonia) - Metrópoles; e
